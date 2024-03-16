@@ -1,10 +1,10 @@
-import express from "express";
-import { getUserFiles, uploadFile } from "../controllers/userFiles.js";
-import { verifyToken } from "../utils/verifyUser.js";
+const express = require("express");
+const { getUserFiles, uploadFile } = require("../controllers/userFiles.js");
+
 
 const router = express.Router();
 
-router.post("/upload",verifyToken, uploadFile);
-router.get("/Allfiles",verifyToken, getUserFiles)
+router.post("/upload", uploadFile);
+router.get("/Allfiles", getUserFiles);
 
-export default router;
+module.exports = router;

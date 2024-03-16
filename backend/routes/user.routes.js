@@ -1,9 +1,9 @@
-import express from "express";
-import { Logout, google } from "../controllers/user.controller.js";
+const express = require("express");
+const { Logout, google } = require("../controllers/user.controller.js");
 
 const router = express.Router();
 
 router.post("/google", google);
 router.post("/logout", Logout);
 
-export default router;
+module.exports = router;

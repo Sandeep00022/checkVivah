@@ -1,17 +1,20 @@
-import express from "express";
-import connection from "./config/config.js";
-import userRouter from "./routes/user.routes.js";
-import fileRouter from "./routes/userFiles.routes.js";
-import dotnev from "dotenv";
-import path from "path";
-import cookieParser from "cookie-parser";
+const express = require("express");
+const connection = require("./config/config.js");
+const userRouter = require("./routes/user.routes.js");
+const fileRouter = require("./routes/userFiles.routes.js");
+const dotnev = require("dotenv");
+const path = require("path");
+const cookieParser = require("cookie-parser");
 
 dotnev.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-const __dirname = path.resolve();
+// __dirname is already globally available in CommonJS modules, so you don't need to declare it.
+// Remove the redundant declaration of __dirname
+// const __dirname = path.resolve();
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
@@ -19,24 +22,27 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRouter);
 app.use("/api/file", fileRouter);
 
-app.use(express.static(path.join(__dirname, "/frontend/dist")));
+// Instead of declaring __dirname, use path.resolve() directly
+app.use(express.static(path.resolve(__dirname, "frontend", "dist")));
 
 app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
-  });
+  res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+});
 
 const port = process.env.PORT || 8000;
 
-app.listen(port, () => {
-  connection.then(() => {
+connection.then(() => {
+  app.listen(port, () => {
+    console.log("Server is running on port", port);
     console.log("connected to Database");
   });
-  console.log(`Server is running on port ${port}`);
+}).catch(error => {
+  console.error("Error connecting to database:", error);
 });
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message = err.message || " Internal Server error";
+  const message = err.message || "Internal Server error";
 
   res.status(statusCode).json({
     success: false,
