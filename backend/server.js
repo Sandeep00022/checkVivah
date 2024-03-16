@@ -2,18 +2,17 @@ const express = require("express");
 const connection = require("./config/config.js");
 const userRouter = require("./routes/user.routes.js");
 const fileRouter = require("./routes/userFiles.routes.js");
-const dotnev = require("dotenv");
+const dotenv = require("dotenv");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 
-dotnev.config();
+dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// __dirname is already globally available in CommonJS modules, so you don't need to declare it.
-// Remove the redundant declaration of __dirname
-// const __dirname = path.resolve();
+// Use path.resolve() to ensure __dirname is resolved correctly
+const rootDir = path.resolve();
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -22,24 +21,27 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRouter);
 app.use("/api/file", fileRouter);
 
-// Instead of declaring __dirname, use path.resolve() directly
-app.use(express.static(path.resolve(__dirname, "frontend", "dist")));
+// Serve static files from the frontend/dist directory
+app.use(express.static(path.join(rootDir, "frontend", "dist")));
 
+// Route for serving index.html for all other routes
 app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+  res.sendFile(path.join(rootDir, "frontend", "dist", "index.html"));
 });
 
 const port = process.env.PORT || 8000;
 
+// Start the server after the database connection is established
 connection.then(() => {
   app.listen(port, () => {
     console.log("Server is running on port", port);
-    console.log("connected to Database");
+    console.log("Connected to Database");
   });
 }).catch(error => {
   console.error("Error connecting to database:", error);
 });
 
+// Error handling middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server error";
